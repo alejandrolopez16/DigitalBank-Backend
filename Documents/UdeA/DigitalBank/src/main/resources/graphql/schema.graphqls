@@ -1,0 +1,31 @@
+# Obligatorio de GraphQL: Los datos que entran se definen como 'input'.
+# Spring Boot convertirá esto automáticamente en tu Entidad Customer.java
+input CustomerInput {
+    documentNumber: String!
+    documentType: String!
+    name: String!
+    birthDate: String!
+    email: String!
+    phone: String
+    address: String
+    passwordHash: String!
+}
+
+# Lo que le devolvemos al usuario al crear la cuenta (excluimos la contraseña por seguridad)
+type Customer {
+    documentNumber: String!
+    name: String!
+    email: String!
+    status: String!
+}
+
+# Aquí definimos las acciones (Mutations = POST/PUT/DELETE)
+type Mutation {
+    # El nombre 'cliente' aquí debe coincidir con el @Argument("cliente") de tu controlador Java
+    registrarCliente(cliente: CustomerInput!): Customer!
+}
+
+# GraphQL siempre exige tener al menos un Query (GET), pongamos uno de prueba
+type Query {
+    ping: String
+}
