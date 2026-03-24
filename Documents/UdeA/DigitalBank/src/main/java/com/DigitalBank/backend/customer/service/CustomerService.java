@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 import com.DigitalBank.backend.customer.entity.Customer;
 import com.DigitalBank.backend.customer.repository.CustomerRepository;
 
+import java.util.List;
+
+
 
 @Service
 
@@ -38,5 +41,40 @@ public Customer regiCustomer(Customer newCustomer){
     newCustomer.setPasswordHash(passwordEncripted);
 
     return customerRepository.save(newCustomer);
+}
+
+public List<Customer> getPendingCustomers() {
+    return customerRepository.findByStatus("PENDING");
+}
+
+public Customer approveCustomer(String documentNumber) {
+
+    Customer customer = customerRepository.findById(documentNumber)
+        .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+
+    customer.setStatus("ACTIVE");
+    customer.setRejectionComments(null);
+
+    return customerRepository.save(customer);
+}
+
+public Customer rejectCustomer(String documentNumber, String comment) {
+
+    if (comment == null || comment.trim().isEmpty()) {
+    throw new IllegalArgumentException("El comentario es obligatorio para rechazar");
+}
+    Customer customer = customerRepository.findById(documentNumber)
+        .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+
+    customer.setStatus("REJECTED");
+    customer.setRejectionComments(comment);
+    
+
+    return customerRepository.save(customer);
+}
+
+public Customer getCustomerByDocument(String documentNumber) {
+    return customerRepository.findById(documentNumber)
+        .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 }
 }
