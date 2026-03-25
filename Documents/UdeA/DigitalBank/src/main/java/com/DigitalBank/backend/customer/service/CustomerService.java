@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 
 import com.DigitalBank.backend.customer.entity.Customer;
 import com.DigitalBank.backend.customer.repository.CustomerRepository;
+import com.DigitalBank.backend.email.service.EmailService;
+import com.DigitalBank.backend.email.templates.EmailTemplates;
+
 
 import java.util.List;
 
@@ -20,9 +23,11 @@ public class CustomerService {
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public CustomerService(CustomerRepository customerRepository, PasswordEncoder passwordEncoder) {
+    public CustomerService(CustomerRepository customerRepository, PasswordEncoder passwordEncoder, EmailService emailService) {
         this.customerRepository = customerRepository;
         this.passwordEncoder = passwordEncoder; 
+        this.emailService = emailService;
+
     }
 public Customer regiCustomer(Customer newCustomer){
 
@@ -55,6 +60,13 @@ public Customer approveCustomer(String documentNumber) {
     customer.setStatus("ACTIVE");
     customer.setRejectionComments(null);
 
+    String html = EmailTemplates.approvedTemplate(customer.getName());
+
+    emailService.sendEmail(
+        customer.getEmail(),
+        "Cuenta aprobada",
+        html
+    );
     return customerRepository.save(customer);
 }
 
@@ -68,6 +80,17 @@ public Customer rejectCustomer(String documentNumber, String comment) {
 
     customer.setStatus("REJECTED");
     customer.setRejectionComments(comment);
+
+    String html = EmailTemplates.rejectedTemplate(
+        customer.getName(),
+        comment
+    );
+
+    emailService.sendEmail(
+        customer.getEmail(),
+        "Cuenta rechazada",
+        html
+    );  
     
 
     return customerRepository.save(customer);
@@ -77,4 +100,9 @@ public Customer getCustomerByDocument(String documentNumber) {
     return customerRepository.findById(documentNumber)
         .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 }
+    private final EmailService emailService;
+
+
+
+
 }
