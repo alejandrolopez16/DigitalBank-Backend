@@ -7,8 +7,10 @@ import java.util.List;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+
+import com.DigitalBank.backend.customer.entity.AuthResponse;
 import com.DigitalBank.backend.customer.entity.Customer;
-import com.DigitalBank.backend.customer.service.CustomerService;// Ojo con estos imports, que coincidan con tus carpetas
+import com.DigitalBank.backend.customer.service.CustomerService;
 
 @Controller
 public class CustomerGraphQLController {
@@ -46,6 +48,11 @@ public class CustomerGraphQLController {
                                     @Argument String comentario) {
         return customerService.rejectCustomer(documentNumber, comentario);
     }
+
+    @MutationMapping
+    public AuthResponse login(@Argument String email, @Argument String passwordHash) { 
+        return customerService.login(email, passwordHash);
+    }    
 
     @QueryMapping
     public Customer clientePorDocumento(@Argument String documentNumber) {

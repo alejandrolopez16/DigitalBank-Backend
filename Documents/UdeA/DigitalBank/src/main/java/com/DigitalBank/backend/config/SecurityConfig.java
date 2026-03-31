@@ -1,4 +1,4 @@
-package com.DigitalBank.backend;
+package com.DigitalBank.backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

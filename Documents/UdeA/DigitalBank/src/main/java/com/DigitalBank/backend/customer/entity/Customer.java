@@ -41,6 +41,9 @@ public class Customer {
     @Column(name = "login_attempts")
     private Integer loginAttempts = 0;
 
+    @Column (name="lock_time")
+    private LocalDateTime lockTime;
+
     @Column(length = 20)
     private String status = "PENDING";
 

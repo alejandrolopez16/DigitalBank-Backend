@@ -1,4 +1,4 @@
-package com.DigitalBank.backend;
+package com.DigitalBank.backend.config;
 
 import graphql.GraphQLError;
 import graphql.GraphqlErrorBuilder;
