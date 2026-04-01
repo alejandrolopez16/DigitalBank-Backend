@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class FinancialAccountService {
@@ -25,14 +27,7 @@ public class FinancialAccountService {
 
     @Transactional
     public FinancialAccount createFinancialAccount(String documentNumber) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
-            throw new IllegalArgumentException("Debe iniciar sesión con un token JWT válido para crear una cuenta financiera");
-        }
-
-        String authenticatedEmail = authentication.getName();
-        Customer authenticatedCustomer = customerRepository.findByEmail(authenticatedEmail)
-                .orElseThrow(() -> new IllegalArgumentException("Usuario autenticado no encontrado"));
+        Customer authenticatedCustomer = getAuthenticatedCustomer();
 
         if (!authenticatedCustomer.getDocumentNumber().equals(documentNumber)) {
             throw new IllegalArgumentException("Solo puedes crear una cuenta financiera para tu propio usuario");
@@ -47,5 +42,29 @@ public class FinancialAccountService {
                 .build();
 
         return financialAccountRepository.save(account);
+    }
+
+    @Transactional(readOnly = true)
+    public List<FinancialAccount> getMyFinancialAccounts() {
+        Customer authenticatedCustomer = getAuthenticatedCustomer();
+        return financialAccountRepository.findByCustomerDocumentNumber(authenticatedCustomer.getDocumentNumber());
+    }
+
+    @Transactional(readOnly = true)
+    public FinancialAccount getMyFinancialAccountById(UUID accountId) {
+        Customer authenticatedCustomer = getAuthenticatedCustomer();
+        return financialAccountRepository.findByIdAndCustomerDocumentNumber(accountId, authenticatedCustomer.getDocumentNumber())
+                .orElseThrow(() -> new IllegalArgumentException("Cuenta financiera no encontrada para el usuario autenticado"));
+    }
+
+    private Customer getAuthenticatedCustomer() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new IllegalArgumentException("Debe iniciar sesión con un token JWT válido para consultar o crear cuentas financieras");
+        }
+
+        String authenticatedEmail = authentication.getName();
+        return customerRepository.findByEmail(authenticatedEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario autenticado no encontrado"));
     }
 }

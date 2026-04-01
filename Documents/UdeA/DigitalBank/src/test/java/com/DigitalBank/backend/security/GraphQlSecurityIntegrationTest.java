@@ -68,4 +68,19 @@ class GraphQlSecurityIntegrationTest {
                 .andExpect(jsonPath("$.data.login.token").value("fake-token"))
                 .andExpect(jsonPath("$.data.login.message").value("Inicio de sesión exitoso"));
     }
+
+    @Test
+    void shouldBlockAccountInformationQueryWithoutToken() throws Exception {
+        String body = """
+                {
+                  "query": "query { misCuentasFinancieras { id documentNumber balance } }"
+                }
+                """;
+
+        mockMvc.perform(post("/graphql")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error").value("Debe autenticarse con JWT para ejecutar esta operación"));
+    }
 }

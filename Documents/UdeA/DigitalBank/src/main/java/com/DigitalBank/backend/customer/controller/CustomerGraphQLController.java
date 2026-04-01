@@ -15,6 +15,8 @@ import com.DigitalBank.backend.customer.entity.AuthResponse;
 import com.DigitalBank.backend.customer.entity.Customer;
 import com.DigitalBank.backend.customer.service.CustomerService;
 
+import java.util.UUID;
+
 @Controller
 public class CustomerGraphQLController {
 
@@ -62,6 +64,16 @@ public class CustomerGraphQLController {
     @MutationMapping
     public FinancialAccount crearCuentaFinanciera(@Argument String documentNumber) {
         return financialAccountService.createFinancialAccount(documentNumber);
+    }
+
+    @QueryMapping
+    public List<FinancialAccount> misCuentasFinancieras() {
+        return financialAccountService.getMyFinancialAccounts();
+    }
+
+    @QueryMapping
+    public FinancialAccount miCuentaFinanciera(@Argument String accountId) {
+        return financialAccountService.getMyFinancialAccountById(UUID.fromString(accountId));
     }
 
     @SchemaMapping(typeName = "FinancialAccount", field = "documentNumber")

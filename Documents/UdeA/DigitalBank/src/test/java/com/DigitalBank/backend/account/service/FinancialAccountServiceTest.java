@@ -18,10 +18,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -76,6 +78,55 @@ class FinancialAccountServiceTest {
         assertEquals("111", account.getCustomer().getDocumentNumber());
         verify(financialAccountRepository).save(any(FinancialAccount.class));
     }
+
+        @Test
+        void shouldReturnOnlyAuthenticatedUserAccounts() {
+        Customer authenticatedCustomer = Customer.builder()
+            .documentNumber("111")
+            .email("owner@bank.com")
+            .build();
+
+        FinancialAccount first = FinancialAccount.builder()
+            .id(UUID.randomUUID())
+            .customer(authenticatedCustomer)
+            .balance(BigDecimal.ZERO)
+            .build();
+
+        FinancialAccount second = FinancialAccount.builder()
+            .id(UUID.randomUUID())
+            .customer(authenticatedCustomer)
+            .balance(BigDecimal.TEN)
+            .build();
+
+        setAuthenticatedUser("owner@bank.com");
+        when(customerRepository.findByEmail("owner@bank.com")).thenReturn(Optional.of(authenticatedCustomer));
+        when(financialAccountRepository.findByCustomerDocumentNumber("111")).thenReturn(List.of(first, second));
+
+        List<FinancialAccount> accounts = financialAccountService.getMyFinancialAccounts();
+
+        assertEquals(2, accounts.size());
+        assertEquals("111", accounts.get(0).getCustomer().getDocumentNumber());
+        verify(financialAccountRepository).findByCustomerDocumentNumber("111");
+        }
+
+        @Test
+        void shouldRejectAccountByIdWhenItDoesNotBelongToAuthenticatedUser() {
+        Customer authenticatedCustomer = Customer.builder()
+            .documentNumber("111")
+            .email("owner@bank.com")
+            .build();
+        UUID accountId = UUID.randomUUID();
+
+        setAuthenticatedUser("owner@bank.com");
+        when(customerRepository.findByEmail("owner@bank.com")).thenReturn(Optional.of(authenticatedCustomer));
+        when(financialAccountRepository.findByIdAndCustomerDocumentNumber(eq(accountId), eq("111")))
+            .thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+            () -> financialAccountService.getMyFinancialAccountById(accountId));
+
+        assertEquals("Cuenta financiera no encontrada para el usuario autenticado", exception.getMessage());
+        }
 
     private void setAuthenticatedUser(String email) {
         SecurityContext context = SecurityContextHolder.createEmptyContext();

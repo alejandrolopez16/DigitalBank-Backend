@@ -56,5 +56,7 @@ type Query {
     ping: String
     clientesPendientes: [Customer]
     clientePorDocumento(documentNumber: String!): Customer
+    misCuentasFinancieras: [FinancialAccount!]!
+    miCuentaFinanciera(accountId: ID!): FinancialAccount!
 
 }
