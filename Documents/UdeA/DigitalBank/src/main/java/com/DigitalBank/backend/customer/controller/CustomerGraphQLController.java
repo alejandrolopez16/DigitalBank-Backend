@@ -7,7 +7,10 @@ import java.util.List;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+import org.springframework.graphql.data.method.annotation.SchemaMapping;
 
+import com.DigitalBank.backend.account.entity.FinancialAccount;
+import com.DigitalBank.backend.account.service.FinancialAccountService;
 import com.DigitalBank.backend.customer.entity.AuthResponse;
 import com.DigitalBank.backend.customer.entity.Customer;
 import com.DigitalBank.backend.customer.service.CustomerService;
@@ -16,9 +19,11 @@ import com.DigitalBank.backend.customer.service.CustomerService;
 public class CustomerGraphQLController {
 
     private final CustomerService customerService;
+    private final FinancialAccountService financialAccountService;
 
-    public CustomerGraphQLController(CustomerService customerService) {
+    public CustomerGraphQLController(CustomerService customerService, FinancialAccountService financialAccountService) {
         this.customerService = customerService;
+        this.financialAccountService = financialAccountService;
     }
 
     // El nombre de este método DEBE ser igual al del schema.graphqls
@@ -52,7 +57,17 @@ public class CustomerGraphQLController {
     @MutationMapping
     public AuthResponse login(@Argument String email, @Argument String passwordHash) { 
         return customerService.login(email, passwordHash);
-    }    
+    }
+
+    @MutationMapping
+    public FinancialAccount crearCuentaFinanciera(@Argument String documentNumber) {
+        return financialAccountService.createFinancialAccount(documentNumber);
+    }
+
+    @SchemaMapping(typeName = "FinancialAccount", field = "documentNumber")
+    public String documentNumber(FinancialAccount financialAccount) {
+        return financialAccount.getCustomer().getDocumentNumber();
+    }
 
     @QueryMapping
     public Customer clientePorDocumento(@Argument String documentNumber) {

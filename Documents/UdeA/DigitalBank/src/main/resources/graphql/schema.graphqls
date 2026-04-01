@@ -35,6 +35,12 @@ type AuthResponse {
     message: String
 }
 
+type FinancialAccount {
+    id: ID!
+    documentNumber: String!
+    balance: Float!
+}
+
 # Aquí definimos las acciones (Mutations = POST/PUT/DELETE)
 type Mutation {
     # El nombre 'cliente' aquí debe coincidir con el @Argument("cliente") de tu controlador Java
@@ -42,6 +48,7 @@ type Mutation {
     aprobarCliente(documentNumber: String!): Customer!
     rechazarCliente(documentNumber: String!, comentario: String!): Customer!
     login(email:String!,passwordHash:String!):AuthResponse
+    crearCuentaFinanciera(documentNumber: String!): FinancialAccount!
 }
 
 # GraphQL siempre exige tener al menos un Query (GET), pongamos uno de prueba
