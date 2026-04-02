@@ -14,6 +14,7 @@ import com.DigitalBank.backend.account.service.FinancialAccountService;
 import com.DigitalBank.backend.customer.entity.AuthResponse;
 import com.DigitalBank.backend.customer.entity.Customer;
 import com.DigitalBank.backend.customer.service.CustomerService;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.UUID;
 
@@ -42,15 +43,18 @@ public class CustomerGraphQLController {
     }
 
     @QueryMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public List<Customer> clientesPendientes() {
         return customerService.getPendingCustomers(); 
     }
     @MutationMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public Customer aprobarCliente(@Argument String documentNumber) {
         return customerService.approveCustomer(documentNumber);
     }
 
-        @MutationMapping
+    @MutationMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public Customer rechazarCliente(@Argument String documentNumber,
                                     @Argument String comentario) {
         return customerService.rejectCustomer(documentNumber, comentario);

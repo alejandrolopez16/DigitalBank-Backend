@@ -46,4 +46,8 @@ public class JwtUtil {
                 .parseSignedClaims(token)
                 .getPayload();
     }
+
+    public String extractRoles(String token) {
+    return extractAllClaims(token).get("role", String.class);
+}
 }
