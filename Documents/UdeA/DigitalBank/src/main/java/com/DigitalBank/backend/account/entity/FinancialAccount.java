@@ -43,6 +43,10 @@ public class FinancialAccount {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Builder.Default
+    @Column(name = "status",nullable = false, length = 20)
+    private String status = "ACTIVE";
+
     @PrePersist
     protected void onCreate() {
         if (this.balance == null) {
@@ -50,4 +54,6 @@ public class FinancialAccount {
         }
         this.createdAt = LocalDateTime.now();
     }
+
+    
 }

@@ -67,4 +67,34 @@ public class FinancialAccountService {
         return customerRepository.findByEmail(authenticatedEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario autenticado no encontrado"));
     }
+
+    public FinancialAccount blockAccount(UUID accountId, String email) {
+
+        Customer customer = getAuthenticatedCustomer();
+
+        FinancialAccount account = financialAccountRepository.findById(accountId)
+            .orElseThrow(() -> new RuntimeException("Cuenta no encontrada"));
+
+        // Validar que sea el dueño
+        if (!account.getCustomer().getEmail().equals(customer.getEmail())) {
+            throw new RuntimeException("No autorizado");
+        }
+
+        account.setStatus("BLOCKED");
+        return financialAccountRepository.save(account);
+    }
+
+    public FinancialAccount unblockAccount(UUID accountId, String email) {
+        Customer customer = getAuthenticatedCustomer();
+
+        FinancialAccount account = financialAccountRepository.findById(accountId)
+            .orElseThrow(() -> new RuntimeException("Cuenta no encontrada"));
+
+        if (!account.getCustomer().getEmail().equals(customer.getEmail())) {
+            throw new RuntimeException("No autorizado");
+        }
+
+        account.setStatus("ACTIVE");
+        return financialAccountRepository.save(account);
+    }
 }

@@ -15,6 +15,7 @@ import com.DigitalBank.backend.customer.entity.AuthResponse;
 import com.DigitalBank.backend.customer.entity.Customer;
 import com.DigitalBank.backend.customer.service.CustomerService;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.UUID;
 
@@ -88,5 +89,17 @@ public class CustomerGraphQLController {
     @QueryMapping
     public Customer clientePorDocumento(@Argument String documentNumber) {
         return customerService.getCustomerByDocument(documentNumber);
-}
+    }
+
+    @MutationMapping
+    public FinancialAccount bloquearCuenta(@Argument String accountId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return financialAccountService.blockAccount(UUID.fromString(accountId), email);
+    }
+
+    @MutationMapping
+    public FinancialAccount desbloquearCuenta(@Argument String accountId) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return financialAccountService.unblockAccount(UUID.fromString(accountId), email);
+    }
 }

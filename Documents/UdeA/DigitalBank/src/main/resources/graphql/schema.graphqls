@@ -39,6 +39,7 @@ type FinancialAccount {
     id: ID!
     documentNumber: String!
     balance: Float!
+    status: String!
 }
 
 # Aquí definimos las acciones (Mutations = POST/PUT/DELETE)
@@ -49,6 +50,8 @@ type Mutation {
     rechazarCliente(documentNumber: String!, comentario: String!): Customer!
     login(email:String!,passwordHash:String!):AuthResponse
     crearCuentaFinanciera(documentNumber: String!): FinancialAccount!
+    bloquearCuenta(accountId: ID!): FinancialAccount!
+    desbloquearCuenta(accountId: ID!): FinancialAccount!
 }
 
 # GraphQL siempre exige tener al menos un Query (GET), pongamos uno de prueba
@@ -58,5 +61,4 @@ type Query {
     clientePorDocumento(documentNumber: String!): Customer
     misCuentasFinancieras: [FinancialAccount!]!
     miCuentaFinanciera(accountId: ID!): FinancialAccount!
-
 }
