@@ -7,7 +7,11 @@ import java.util.List;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
 import org.springframework.graphql.data.method.annotation.QueryMapping;
+<<<<<<< HEAD
+import org.springframework.security.access.prepost.PreAuthorize;
+=======
 import org.springframework.graphql.data.method.annotation.SchemaMapping;
+>>>>>>> 0fe90907a27b7025670cda6d4ffddf1e85a7a613
 
 import com.DigitalBank.backend.account.entity.FinancialAccount;
 import com.DigitalBank.backend.account.service.FinancialAccountService;
@@ -44,7 +48,11 @@ public class CustomerGraphQLController {
     }
 
     @QueryMapping
+<<<<<<< HEAD
+    @PreAuthorize("hasRole('ADMIN')") // Solo los ADMIN pueden ver esta lista
+=======
     @PreAuthorize("hasRole('ADMIN')")
+>>>>>>> 0fe90907a27b7025670cda6d4ffddf1e85a7a613
     public List<Customer> clientesPendientes() {
         return customerService.getPendingCustomers(); 
     }
@@ -54,7 +62,11 @@ public class CustomerGraphQLController {
         return customerService.approveCustomer(documentNumber);
     }
 
+<<<<<<< HEAD
+        @MutationMapping
+=======
     @MutationMapping
+>>>>>>> 0fe90907a27b7025670cda6d4ffddf1e85a7a613
     @PreAuthorize("hasRole('ADMIN')")
     public Customer rechazarCliente(@Argument String documentNumber,
                                     @Argument String comentario) {
@@ -87,6 +99,7 @@ public class CustomerGraphQLController {
     }
 
     @QueryMapping
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')") // ADMIN y USER pueden acceder
     public Customer clientePorDocumento(@Argument String documentNumber) {
         return customerService.getCustomerByDocument(documentNumber);
     }

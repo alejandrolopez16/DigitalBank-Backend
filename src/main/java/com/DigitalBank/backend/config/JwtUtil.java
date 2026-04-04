@@ -31,6 +31,37 @@ public class JwtUtil {
                 .compact();
     }
 
+<<<<<<< HEAD
+    // 1. Extraer todas las "claims" (el contenido del token)
+    private io.jsonwebtoken.Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey()) // Usa el SecretKey para verificar
+                .build()
+                .parseSignedClaims(token) // Lee el token firmado
+                .getPayload(); // Extrae el contenido (email, roles, etc.)
+    }
+
+    // 2. Extraer el correo (Subject)
+    public String extractUsername(String token) {
+        return extractAllClaims(token).getSubject();
+    }
+
+    // 3. Extraer el rol (Buscamos la palabra "role" exacta que usaste en la línea 26)
+    public String extractRoles(String token) {
+        return extractAllClaims(token).get("role", String.class);
+    }
+
+    // 4. Validar que el token sea del usuario correcto y no haya expirado
+    public boolean validateToken(String token, String email) {
+        final String tokenEmail = extractUsername(token);
+        return (tokenEmail.equals(email) && !isTokenExpired(token));
+    }
+
+    // 5. Comprobar la fecha de expiración
+    private boolean isTokenExpired(String token) {
+        return extractAllClaims(token).getExpiration().before(new java.util.Date());
+    }
+=======
     public String extractEmail(String token) {
         return extractAllClaims(token).getSubject();
     }
@@ -50,4 +81,5 @@ public class JwtUtil {
     public String extractRoles(String token) {
     return extractAllClaims(token).get("role", String.class);
 }
+>>>>>>> 0fe90907a27b7025670cda6d4ffddf1e85a7a613
 }
