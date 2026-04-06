@@ -31,7 +31,6 @@ public class JwtUtil {
                 .compact();
     }
 
-<<<<<<< HEAD
     // 1. Extraer todas las "claims" (el contenido del token)
     private io.jsonwebtoken.Claims extractAllClaims(String token) {
         return Jwts.parser()
@@ -61,7 +60,6 @@ public class JwtUtil {
     private boolean isTokenExpired(String token) {
         return extractAllClaims(token).getExpiration().before(new java.util.Date());
     }
-=======
     public String extractEmail(String token) {
         return extractAllClaims(token).getSubject();
     }
@@ -69,17 +67,4 @@ public class JwtUtil {
     public boolean isTokenValid(String token) {
         return !extractAllClaims(token).getExpiration().before(new Date());
     }
-
-    private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-    }
-
-    public String extractRoles(String token) {
-    return extractAllClaims(token).get("role", String.class);
-}
->>>>>>> 0fe90907a27b7025670cda6d4ffddf1e85a7a613
 }

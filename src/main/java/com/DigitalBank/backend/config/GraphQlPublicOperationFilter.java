@@ -23,7 +23,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
-@Component
+//@Component
 public class GraphQlPublicOperationFilter extends OncePerRequestFilter {
 
     private static final Set<String> PUBLIC_OPERATIONS = Set.of("login", "registrarCliente");
