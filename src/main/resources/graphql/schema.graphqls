@@ -9,6 +9,9 @@ input CustomerInput {
     phone: String
     address: String
     passwordHash: String!
+    documentFrontUrl: String
+    documentBackUrl: String
+    selfieUrl: String
 }
 
 # Lo que le devolvemos al usuario al crear la cuenta (excluimos la contraseña por seguridad)
