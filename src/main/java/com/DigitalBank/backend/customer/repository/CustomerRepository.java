@@ -12,4 +12,5 @@ public interface CustomerRepository extends JpaRepository<Customer, String> {
     Boolean existsByDocumentNumber(String documentNumber); //Valida si el número de documento ya existe en la base de datos
     List<Customer> findByStatus(String status); //Busca clientes por su estado (PENDING, APPROVED, REJECTED)
     Optional<Customer> findByEmail(String email); //Busca un cliente por su email, útil para autenticación
+
 }

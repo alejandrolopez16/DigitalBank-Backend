@@ -45,6 +45,36 @@ type FinancialAccount {
     status: String!
 }
 
+type SecurityPolicy{
+    idSecurityPolicy:ID!
+    dailyLimit:Float!
+    validationLimit:Float!
+    validationType:String!
+    updatedAt:String
+}
+
+# Pre-Validación de cuentas para transferencia
+type DestinationPreview {
+    isValid: Boolean!
+    message: String!
+    obfuscatedName: String
+    accountStatus: String
+}
+
+type TransferResponse {
+    success: Boolean!
+    message: String!
+    transactionReference: String
+    status: String
+    destinationName: String
+}
+
+input SecurityPolicyInput {
+    dailyLimit: Float!
+    validationLimit: Float!
+    validationType: String!
+}
+
 # Aquí definimos las acciones (Mutations = POST/PUT/DELETE)
 type Mutation {
     # El nombre 'cliente' aquí debe coincidir con el @Argument("cliente") de tu controlador Java
@@ -55,6 +85,14 @@ type Mutation {
     crearCuentaFinanciera(documentNumber: String!): FinancialAccount!
     bloquearCuenta(accountId: ID!): FinancialAccount!
     desbloquearCuenta(accountId: ID!): FinancialAccount!
+
+    ActualizarPoliticaSeguridad(input : SecurityPolicyInput!): SecurityPolicy!
+    ejecutarTransferencia(
+        sourceAccountId: String!, 
+        destinationAccountId: String!, 
+        amount: Float!, 
+        description: String
+    ): TransferResponse!
 }
 
 # GraphQL siempre exige tener al menos un Query (GET), pongamos uno de prueba
@@ -64,4 +102,7 @@ type Query {
     clientePorDocumento(documentNumber: String!): Customer
     misCuentasFinancieras: [FinancialAccount!]!
     miCuentaFinanciera(accountId: ID!): FinancialAccount!
+
+    politicasSeguridad:SecurityPolicy!
+    validarCuentaDestino(accountId: ID!): DestinationPreview!
 }
