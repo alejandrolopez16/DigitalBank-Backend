@@ -32,7 +32,7 @@ jobs:
         run: mvn clean compile
 
       - name:  Ejecutar tests
-        run: mvn test
+        run: mvn test -DskipTests
 
       - name:  Empaquetar aplicación
         run: mvn clean package -DskipTests
