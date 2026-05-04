@@ -38,6 +38,7 @@ public class CustomerRegistrationSteps {
     private Customer customerInput;
     private ResponseEntity<Map> registrationResponse;
     private ResponseEntity<ErrorResponse> errorResponse;
+    private static long testCounter = 0; // Contador para IDs únicos
 
     @Given("un usuario con los siguientes datos:")
     public void usuarioConLosSiguientesDatos(io.cucumber.datatable.DataTable dataTable) {
@@ -97,11 +98,12 @@ public class CustomerRegistrationSteps {
 
     @Given("un usuario con fecha de nacimiento {string}")
     public void unUsuarioConFechaDeNacimiento(String birthDate) {
+        String uniqueDoc = "999999999_" + (testCounter++);
         customerInput = Customer.builder()
             .name("Test User")
-            .documentNumber("999999999")
+            .documentNumber(uniqueDoc)
             .documentType("CC")
-            .email("test@bank.com")
+            .email("test" + testCounter + "@bank.com")
             .birthDate(LocalDate.parse(birthDate))
             .passwordHash("SecurePass123!")
             .build();
@@ -135,9 +137,10 @@ public class CustomerRegistrationSteps {
 
     @Given("existe un cliente registrado con email {string}")
     public void existeUnClienteRegistradoConEmail(String email) {
+        String uniqueDoc = "111111111_" + (testCounter++);
         Customer existingCustomer = Customer.builder()
             .name("Existing User")
-            .documentNumber("111111111")
+            .documentNumber(uniqueDoc)
             .documentType("CC")
             .email(email)
             .birthDate(LocalDate.now().minusYears(25))
@@ -154,11 +157,12 @@ public class CustomerRegistrationSteps {
 
     @Given("existe un cliente registrado con documento {string}")
     public void existeUnClienteRegistradoConDocumento(String documentNumber) {
+        // Usar el documento proporcionado en el escenario
         Customer existingCustomer = Customer.builder()
             .name("Existing User")
             .documentNumber(documentNumber)
             .documentType("CC")
-            .email("existing@bank.com")
+            .email("existing" + testCounter + "@bank.com")
             .birthDate(LocalDate.now().minusYears(25))
             .passwordHash(passwordEncoder.encode("ExistingPass123!"))
             .status("ACTIVE")
@@ -173,9 +177,10 @@ public class CustomerRegistrationSteps {
 
     @When("un usuario nuevo intenta registrarse con el mismo email")
     public void unUsuarioNuevoIntentaRegistrarseConElMismoEmail() {
+        String uniqueDoc = "222222222_" + (testCounter++);
         Customer newCustomer = Customer.builder()
             .name("New User")
-            .documentNumber("222222222")
+            .documentNumber(uniqueDoc)
             .documentType("CC")
             .email("existing@bank.com")
             .birthDate(LocalDate.now().minusYears(25))
@@ -191,9 +196,9 @@ public class CustomerRegistrationSteps {
     public void unUsuarioNuevoIntentaRegistrarseConElMismoDocumento() {
         Customer newCustomer = Customer.builder()
             .name("New User")
-            .documentNumber("111111111")
+            .documentNumber("111111111") // Este ID se usa en el Given anterior
             .documentType("CC")
-            .email("new@bank.com")
+            .email("new" + testCounter + "@bank.com")
             .birthDate(LocalDate.now().minusYears(25))
             .passwordHash("NewPass123!")
             .build();

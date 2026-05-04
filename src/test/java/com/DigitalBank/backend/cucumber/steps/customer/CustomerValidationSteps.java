@@ -36,6 +36,7 @@ public class CustomerValidationSteps {
     private ResponseEntity<Map> validationResponse;
     private ResponseEntity<ErrorResponse> errorResponse;
     private String currentDocumentNumber = "456123789"; // Documento por defecto para validaciones
+    private static long testCounter = 0; // Contador para IDs únicos
 
     @Given("existen los siguientes clientes en estado {string}:")
     public void existenLosSiguientesClientesEnEstado(String status, io.cucumber.datatable.DataTable dataTable) {
@@ -44,11 +45,15 @@ public class CustomerValidationSteps {
             .orElseThrow(() -> new RuntimeException("ROLE_USER no encontrado"));
 
         for (Map<String, String> row : rows) {
+            // Generar ID único agregando contador si el documento ya existe
+            String docNumber = row.get("documento");
+            String uniqueDoc = docNumber + "_" + (testCounter++);
+
             Customer customer = Customer.builder()
                 .name(row.get("nombre"))
-                .documentNumber(row.get("documento"))
+                .documentNumber(uniqueDoc)
                 .documentType("CC")
-                .email(row.get("email"))
+                .email(row.get("email").replace("@", "_" + testCounter + "@"))
                 .birthDate(LocalDate.now().minusYears(25))
                 .passwordHash("hashed")
                 .status(status)

@@ -50,6 +50,8 @@ public class TransferSteps {
     private ResponseEntity<Map> transferResponse;
     private ResponseEntity<ErrorResponse> errorResponse;
     private String currentDocumentNumber = "trans_cust_123"; // Documento por defecto para transferencias (max 20 chars)
+    private String destinationDocumentNumber = "trans_dest_456"; // Documento para cuenta destino
+    private static long testCounter = 0; // Contador para IDs únicos
 
     @Given("el cliente autenticado tiene una cuenta con saldo {string}")
     public void elClienteAutenticadoTieneUnaCuentaConSaldo(String balance) {
@@ -63,8 +65,14 @@ public class TransferSteps {
 
     @When("el cliente transfiere {string} a la cuenta destino")
     public void elClienteTransfiereALaCuentaDestino(String amount) {
-        FinancialAccount sourceAccount = financialAccountRepository.findAll().get(0);
-        FinancialAccount destAccount = financialAccountRepository.findAll().get(1);
+        // Obtener cuentas de manera más segura
+        java.util.List<FinancialAccount> accounts = financialAccountRepository.findAll();
+        if (accounts.size() < 2) {
+            throw new IllegalStateException("Se requieren al menos 2 cuentas para realizar transferencia. Encontradas: " + accounts.size());
+        }
+
+        FinancialAccount sourceAccount = accounts.get(0);
+        FinancialAccount destAccount = accounts.get(1);
 
         String query = buildTransferMutation(sourceAccount.getId().toString(), destAccount.getId().toString(), amount);
         GraphQLRequest request = new GraphQLRequest(query);
@@ -83,7 +91,12 @@ public class TransferSteps {
 
     @And("la cuenta origen tiene saldo {string}")
     public void laCuentaOrigenTieneSaldo(String expectedBalance) {
-        FinancialAccount sourceAccount = financialAccountRepository.findAll().get(0);
+        java.util.List<FinancialAccount> accounts = financialAccountRepository.findAll();
+        if (accounts.isEmpty()) {
+            throw new IllegalStateException("No se encontraron cuentas");
+        }
+
+        FinancialAccount sourceAccount = accounts.get(0);
         FinancialAccount updatedSource = financialAccountRepository.findById(sourceAccount.getId())
             .orElseThrow(() -> new AssertionError("Cuenta origen no encontrada"));
 
@@ -93,7 +106,12 @@ public class TransferSteps {
 
     @And("la cuenta destino tiene saldo {string}")
     public void laCuentaDestinoTieneSaldo(String expectedBalance) {
-        FinancialAccount destAccount = financialAccountRepository.findAll().get(1);
+        java.util.List<FinancialAccount> accounts = financialAccountRepository.findAll();
+        if (accounts.size() < 2) {
+            throw new IllegalStateException("Se requieren al menos 2 cuentas. Encontradas: " + accounts.size());
+        }
+
+        FinancialAccount destAccount = accounts.get(1);
         FinancialAccount updatedDest = financialAccountRepository.findById(destAccount.getId())
             .orElseThrow(() -> new AssertionError("Cuenta destino no encontrada"));
 
@@ -120,8 +138,13 @@ public class TransferSteps {
 
     @When("el cliente intenta transferir {string} a la cuenta destino")
     public void elClienteIntentaTransferirALaCuentaDestino(String amount) {
-        FinancialAccount sourceAccount = financialAccountRepository.findAll().get(0);
-        FinancialAccount destAccount = financialAccountRepository.findAll().get(1);
+        java.util.List<FinancialAccount> accounts = financialAccountRepository.findAll();
+        if (accounts.size() < 2) {
+            throw new IllegalStateException("Se requieren al menos 2 cuentas. Encontradas: " + accounts.size());
+        }
+
+        FinancialAccount sourceAccount = accounts.get(0);
+        FinancialAccount destAccount = accounts.get(1);
 
         String query = buildTransferMutation(sourceAccount.getId().toString(), destAccount.getId().toString(), amount);
         GraphQLRequest request = new GraphQLRequest(query);
@@ -145,8 +168,13 @@ public class TransferSteps {
 
     @And("los saldos de las cuentas no cambian")
     public void losSaldosDeLasCuentasNoCambian() {
-        FinancialAccount sourceAccount = financialAccountRepository.findAll().get(0);
-        FinancialAccount destAccount = financialAccountRepository.findAll().get(1);
+        java.util.List<FinancialAccount> accounts = financialAccountRepository.findAll();
+        if (accounts.size() < 2) {
+            throw new IllegalStateException("Se requieren al menos 2 cuentas. Encontradas: " + accounts.size());
+        }
+
+        FinancialAccount sourceAccount = accounts.get(0);
+        FinancialAccount destAccount = accounts.get(1);
 
         // Los saldos deben permanecer iguales
         assertNotNull(sourceAccount);
@@ -174,8 +202,13 @@ public class TransferSteps {
 
     @When("el cliente intenta realizar una transferencia")
     public void elClienteIntentaRealizarUnaTransferencia() {
-        FinancialAccount sourceAccount = financialAccountRepository.findAll().get(0);
-        FinancialAccount destAccount = financialAccountRepository.findAll().get(1);
+        java.util.List<FinancialAccount> accounts = financialAccountRepository.findAll();
+        if (accounts.size() < 2) {
+            throw new IllegalStateException("Se requieren al menos 2 cuentas. Encontradas: " + accounts.size());
+        }
+
+        FinancialAccount sourceAccount = accounts.get(0);
+        FinancialAccount destAccount = accounts.get(1);
 
         String query = buildTransferMutation(sourceAccount.getId().toString(), destAccount.getId().toString(), "500.00");
         GraphQLRequest request = new GraphQLRequest(query);
@@ -193,8 +226,13 @@ public class TransferSteps {
             createAuthenticatedCustomerWithBalance("1000000.00");
             createDestinationCustomerWithBalance("1000000.00");
         }
-        FinancialAccount sourceAccount = financialAccountRepository.findAll().get(0);
-        FinancialAccount destAccount = financialAccountRepository.findAll().get(1);
+        java.util.List<FinancialAccount> accounts = financialAccountRepository.findAll();
+        if (accounts.size() < 2) {
+            throw new IllegalStateException("Se requieren al menos 2 cuentas. Encontradas: " + accounts.size());
+        }
+
+        FinancialAccount sourceAccount = accounts.get(0);
+        FinancialAccount destAccount = accounts.get(1);
 
         sourceAccount.setBalance(sourceAccount.getBalance().subtract(
             new BigDecimal(amount.replace("$", "").replace(",", ""))
@@ -209,8 +247,13 @@ public class TransferSteps {
 
     @When("el cliente intenta transferir {string}")
     public void elClienteIntentaTransferir(String amount) {
-        FinancialAccount sourceAccount = financialAccountRepository.findAll().get(0);
-        FinancialAccount destAccount = financialAccountRepository.findAll().get(1);
+        java.util.List<FinancialAccount> accounts = financialAccountRepository.findAll();
+        if (accounts.size() < 2) {
+            throw new IllegalStateException("Se requieren al menos 2 cuentas. Encontradas: " + accounts.size());
+        }
+
+        FinancialAccount sourceAccount = accounts.get(0);
+        FinancialAccount destAccount = accounts.get(1);
 
         String query = buildTransferMutation(sourceAccount.getId().toString(), destAccount.getId().toString(), amount);
         errorResponse = graphQLSteps.executeQuery(query, ErrorResponse.class);
@@ -222,8 +265,13 @@ public class TransferSteps {
             createAuthenticatedCustomerWithBalance("1000000.00");
             createDestinationCustomerWithBalance("1000000.00");
         }
-        FinancialAccount sourceAccount = financialAccountRepository.findAll().get(0);
-        FinancialAccount destAccount = financialAccountRepository.findAll().get(1);
+        java.util.List<FinancialAccount> accounts = financialAccountRepository.findAll();
+        if (accounts.size() < 2) {
+            throw new IllegalStateException("Se requieren al menos 2 cuentas. Encontradas: " + accounts.size());
+        }
+
+        FinancialAccount sourceAccount = accounts.get(0);
+        FinancialAccount destAccount = accounts.get(1);
 
         String query = buildTransferMutation(sourceAccount.getId().toString(), destAccount.getId().toString(), amount);
         transferResponse = graphQLSteps.executeQuery(query, Map.class);
@@ -256,8 +304,13 @@ public class TransferSteps {
 
     @And("no se afectan los saldos de las cuentas hasta la validación")
     public void noSeAfectanLosSaldosDeLasCuentasHastaLaValidacion() {
-        FinancialAccount sourceAccount = financialAccountRepository.findAll().get(0);
-        FinancialAccount destAccount = financialAccountRepository.findAll().get(1);
+        java.util.List<FinancialAccount> accounts = financialAccountRepository.findAll();
+        if (accounts.size() < 2) {
+            throw new IllegalStateException("Se requieren al menos 2 cuentas. Encontradas: " + accounts.size());
+        }
+
+        FinancialAccount sourceAccount = accounts.get(0);
+        FinancialAccount destAccount = accounts.get(1);
 
         // Los saldos deben mantenerse igual
         assertNotNull(sourceAccount.getBalance());
@@ -313,12 +366,14 @@ public class TransferSteps {
     }
 
     private void createAuthenticatedCustomerWithBalance(String balance) {
-        // Usar el documento actual en lugar del valor fijo
+        // Generar ID único para evitar conflictos
+        String uniqueDoc = currentDocumentNumber + "_" + (testCounter++);
+
         Customer customer = Customer.builder()
-            .documentNumber(currentDocumentNumber)
+            .documentNumber(uniqueDoc)
             .documentType("CC")
             .name("Test Customer")
-            .email("test@bank.com")
+            .email("test" + testCounter + "@bank.com")
             .passwordHash(passwordEncoder.encode("SecurePass123!"))
             .status("ACTIVE")
             .birthDate(LocalDate.now().minusYears(25))
@@ -338,17 +393,19 @@ public class TransferSteps {
         financialAccountRepository.save(account);
 
         // Asegurar que el token está configurado correctamente
-        String token = graphQLSteps.buildAuthenticationToken("test@bank.com", "SecurePass123!");
+        String token = graphQLSteps.buildAuthenticationToken(customer.getEmail(), "SecurePass123!");
         graphQLSteps.setAuthenticationHeader(token);
     }
 
     private void createDestinationCustomerWithBalance(String balance) {
-        String documentNumber = "987654321";
+        // Generar ID único para evitar conflictos
+        String uniqueDoc = destinationDocumentNumber + "_" + (testCounter++);
+
         Customer customer = Customer.builder()
-            .documentNumber(documentNumber)
+            .documentNumber(uniqueDoc)
             .documentType("CC")
             .name("Dest Customer")
-            .email("dest@bank.com")
+            .email("dest" + testCounter + "@bank.com")
             .passwordHash(passwordEncoder.encode("SecurePass123!"))
             .status("ACTIVE")
             .birthDate(LocalDate.now().minusYears(25))
