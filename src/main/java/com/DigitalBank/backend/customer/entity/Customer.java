@@ -11,7 +11,6 @@ import java.util.Set;
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
 @Builder
-
 public class Customer {
     @Id
     @Column(name="document_number",length=20,nullable=false,unique=true)
