@@ -105,4 +105,17 @@ type Query {
 
     politicasSeguridad:SecurityPolicy!
     validarCuentaDestino(accountId: ID!): DestinationPreview!
+    consultarHistorial(accountId: String!): [OperacionHistorial!]!
+}
+
+type OperacionHistorial {
+    fecha: String
+    tipo: String
+    monto: Float
+    estado: String
+}
+
+# Se definen las acciones "Subscriptions"
+type Subscription {
+    notificacionOperacion(accountId:String!):OperacionHistorial
 }

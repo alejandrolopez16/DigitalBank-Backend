@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.List;
 
 
 @Repository
@@ -17,4 +18,9 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
     
     @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t WHERE t.sourceAccount = :accountId AND t.createdAt >= :startOfDay AND t.status IN ('COMPLETED', 'PENDING_VALIDATION')")
     BigDecimal sumarTransaccionesDelDia(@Param("accountId") UUID accountId, @Param("startOfDay") LocalDateTime startOfDay);
+
+    //Query de Historial Ordenado por fecha de creación
+    @Query("SELECT t FROM Transaction t WHERE t.sourceAccount = :accountId OR t.destinationAccount = :accountId ORDER BY t.createdAt DESC")
+    List<Transaction> consultarHistorialPorCuenta(@Param("accountId") UUID accountId);
+
 }

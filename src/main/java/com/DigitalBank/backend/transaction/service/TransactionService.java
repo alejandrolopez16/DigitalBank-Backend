@@ -3,10 +3,15 @@ package com.DigitalBank.backend.transaction.service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +25,9 @@ import com.DigitalBank.backend.customer.repository.CustomerRepository;
 import com.DigitalBank.backend.transaction.entity.SecurityPolicy;
 import com.DigitalBank.backend.transaction.entity.Transaction;
 import com.DigitalBank.backend.transaction.repository.TransactionRepository;
+
+import reactor.core.publisher.Sinks;
+import reactor.core.publisher.Flux;
 
 @Service
 public class TransactionService {
@@ -129,6 +137,26 @@ public class TransactionService {
         financialAccountRepository.save(cuentaOrigen);
         financialAccountRepository.save(cuentaDestino);
 
+        //Notificación a cuenta Origen
+        Map<String, Object> operacionOrigen = new HashMap<>();
+        operacionOrigen.put("fecha", transaccion.getCreatedAt().toString());
+        operacionOrigen.put("tipo", "DEBITO");
+        operacionOrigen.put("monto", amount);
+        operacionOrigen.put("description", concepto);
+        operacionOrigen.put("targetAccountId", cuentaOrigen.getId().toString());
+        operacionOrigen.put("estado",transaccion.getStatus());
+        transactionSink.tryEmitNext(operacionOrigen);
+
+        //Notificación a cuenta Destino
+        Map<String, Object> operacionDestino = new HashMap<>();
+        operacionDestino.put("fecha", transaccion.getCreatedAt().toString());
+        operacionDestino.put("tipo", "CREDITO");
+        operacionDestino.put("monto", amount);
+        operacionDestino.put("description", concepto);
+        operacionDestino.put("targetAccountId", cuentaDestino.getId().toString());
+        operacionDestino.put("estado",transaccion.getStatus());
+        transactionSink.tryEmitNext(operacionDestino);
+
         transaccion.setStatus("COMPLETED");
         transactionRepository.save(transaccion);
 
@@ -141,11 +169,60 @@ public class TransactionService {
 
     }
 
+    private void emitirEventoAWebsocket(String fecha, String tipo, BigDecimal monto, String estado, String targetId) {
+        Map<String, Object> evento = new HashMap<>();
+        evento.put("fecha", fecha);
+        evento.put("tipo", tipo);
+        evento.put("monto", monto);
+        evento.put("estado", estado);
+        evento.put("targetAccountId", targetId);
+        transactionSink.tryEmitNext(evento);
+    }
+
     private Map<String, Object> crearRespuestaError(Map<String, Object> response, String mensaje) {
         response.put("success", false);
         response.put("message", mensaje);
         response.put("transactionReference", null);
         response.put("status", "REJECTED");
+        response.put("destinationName", null);
         return response;
     }
+
+
+
+    private final Sinks.Many<Map<String, Object>> transactionSink = Sinks.many().multicast().onBackpressureBuffer();
+
+    public Flux<Map<String, Object>> streamTransactions(String accountId) {
+        return transactionSink.asFlux()
+        .filter(operacion->accountId.equals(operacion.get("targetAccountId").toString()));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> consultarHistorial(String accountIdStr) {
+        UUID accountId = UUID.fromString(accountIdStr);
+
+        Optional<FinancialAccount> accountOpt = financialAccountRepository.findById(accountId);
+        if (accountOpt.isEmpty()) throw new IllegalArgumentException("La cuenta no existe.");
+
+        FinancialAccount cuenta = accountOpt.get();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (!cuenta.getCustomer().getEmail().equalsIgnoreCase(auth.getName())) {
+            throw new IllegalArgumentException("Acceso denegado: No tienes permisos para ver este historial.");
+        }
+
+        List<Transaction> transacciones = transactionRepository.consultarHistorialPorCuenta(accountId);
+        List<Map<String, Object>> historial = new ArrayList<>();
+
+        for (Transaction t : transacciones) {
+            Map<String, Object> operacion = new HashMap<>();
+            operacion.put("fecha", t.getCreatedAt().toString());
+            operacion.put("monto", t.getAmount());
+            operacion.put("estado", t.getStatus());
+            operacion.put("tipo", t.getSourceAccount().equals(accountId) ? "EGRESO" : "INGRESO");
+            historial.add(operacion);
+        }
+        return historial;
+    }
+
 }
