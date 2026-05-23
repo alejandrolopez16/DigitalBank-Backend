@@ -25,6 +25,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Project compile Maven
+        chmod: +x mvnw
         run: ./mvnw clean package -DskipTests
 
       - name: Configure AWS credentials
