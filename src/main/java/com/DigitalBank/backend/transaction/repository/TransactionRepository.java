@@ -23,4 +23,11 @@ public interface TransactionRepository extends JpaRepository<Transaction, String
     @Query("SELECT t FROM Transaction t WHERE t.sourceAccount = :accountId OR t.destinationAccount = :accountId ORDER BY t.createdAt DESC")
     List<Transaction> consultarHistorialPorCuenta(@Param("accountId") UUID accountId);
 
+    @Query("SELECT t from Transaction t WHERE(t.sourceAccount IN :accountIds OR t.destinationAccount IN :accountIds) AND t.createdAt BETWEEN :startDate AND :endDate")
+    List<Transaction> consultarTransaccionesPorCuentasYFechas(
+        @Param("accountIds") List<UUID> accountIds,
+        @Param("startDate") LocalDateTime startDate,
+        @Param("endDate") LocalDateTime endDate
+    );
+
 }

@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: digitalbank-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: digitalbank
+  template:
+    metadata:
+      labels:
+        app: digitalbank
+    spec:
+      containers:
+      - name: digitalbank-api
+        image: digitalbank-backend:local
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8081
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:postgresql://ep-silent-hat-a8a8ao50-pooler.eastus2.azure.neon.tech/neondb?sslmode=require"
+        - name: SPRING_DATASOURCE_USERNAME
+          value: "neondb_owner"
+        - name: SPRING_DATASOURCE_PASSWORD
+          value: "npg_SVchMZ0g1ePy"
+        - name: JWT_SECRET
+          value: "4zKtX8pB2vR5nN9mQwE7yU1iO0pA3sD6fG9hJ2kL5zX8cV1bN4mQ7wE9rT2yU"
+        - name: JWT_EXPIRATION
+          value: "3600000"
+        - name: CLOUDINARY_CLOUD_NAME
+          value: "dlyd4vt9z"
+        - name: CLOUDINARY_API_KEY
+          value: "797963227595552"
+        - name: CLOUDINARY_API_SECRET
+          value: "XSZA366Co_y4PeGow6-0lKZR9ZM"
+        - name: SPRING_MAIL_HOST
+          value: "smtp.gmail.com"
+        - name: SPRING_MAIL_PORT
+          value: "587"
+        - name: SPRING_MAIL_USERNAME
+          value: "digitalbanknotificaciones@gmail.com"
+        - name: SPRING_MAIL_PASSWORD
+          value: "zrzpgnzdgeaofaoc"

@@ -78,11 +78,11 @@ public class FinancialAccountService {
         Customer customer = getAuthenticatedCustomer();
 
         FinancialAccount account = financialAccountRepository.findById(accountId)
-            .orElseThrow(() -> new RuntimeException("Cuenta no encontrada"));
+            .orElseThrow(() -> new IllegalArgumentException("Cuenta no encontrada"));
 
         // Validar que sea el dueño
         if (!account.getCustomer().getEmail().equals(customer.getEmail())) {
-            throw new RuntimeException("No autorizado");
+            throw new IllegalArgumentException("No autorizado");
         }
 
         account.setStatus("BLOCKED");
@@ -93,10 +93,10 @@ public class FinancialAccountService {
         Customer customer = getAuthenticatedCustomer();
 
         FinancialAccount account = financialAccountRepository.findById(accountId)
-            .orElseThrow(() -> new RuntimeException("Cuenta no encontrada"));
+            .orElseThrow(() -> new IllegalArgumentException("Cuenta no encontrada"));
 
         if (!account.getCustomer().getEmail().equals(customer.getEmail())) {
-            throw new RuntimeException("No autorizado");
+            throw new IllegalArgumentException("No autorizado");
         }
 
         account.setStatus("ACTIVE");

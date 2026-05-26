@@ -119,3 +119,37 @@ type OperacionHistorial {
 type Subscription {
     notificacionOperacion(accountId:String!):OperacionHistorial
 }
+
+type FinancialReport {
+    periodStart: String!
+    periodEnd: String!
+    totalIncome: Float!
+    totalExpense: Float!
+    netProfit: Float!
+    message: String
+}
+
+extend type Query {
+    reporteActividadFinanciera(startDate: String!, endDate: String!): FinancialReport!
+}
+
+type AuditLog {
+    id: ID!
+    transactionReference: String!
+    sourceAccountId: String
+    destinationAccountId: String
+    sourceCustomerDocument: String
+    destinationCustomerDocument: String
+    operationType: String!
+    amount: Float!
+    balanceBeforeSource: Float
+    balanceAfterSource: Float
+    balanceBeforeDestination: Float
+    balanceAfterDestination: Float
+    status: String!
+    createdAt: String!
+}
+
+extend type Query {
+    consultarAuditoria(accountId: String!): [AuditLog!]!
+}

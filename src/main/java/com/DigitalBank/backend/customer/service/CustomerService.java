@@ -69,7 +69,7 @@ public List<Customer> getPendingCustomers() {
 public Customer approveCustomer(String documentNumber) {
 
     Customer customer = customerRepository.findById(documentNumber)
-        .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+        .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado"));
 
     customer.setStatus("ACTIVE");
     customer.setRejectionComments(null);
@@ -90,7 +90,7 @@ public Customer rejectCustomer(String documentNumber, String comment) {
     throw new IllegalArgumentException("El comentario es obligatorio para rechazar");
 }
     Customer customer = customerRepository.findById(documentNumber)
-        .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+        .orElseThrow(() -> new IllegalArgumentException("Cliente no encontrado"));
 
     customer.setStatus("REJECTED");
     customer.setRejectionComments(comment);
