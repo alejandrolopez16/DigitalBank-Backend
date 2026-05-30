@@ -47,6 +47,20 @@ public class TransactionService {
     @Autowired
     private TransactionAuditLogService auditLogService;
 
+    private void registrarAuditoria(String auditRef, UUID sourceUuid, UUID destinationUuid,
+            String sourceDoc, String destDoc, BigDecimal amount,
+            BigDecimal balanceBeforeSource, BigDecimal balanceAfterSource,
+            BigDecimal balanceBeforeDestination, BigDecimal balanceAfterDestination,
+            String status) {
+        if (auditLogService == null) {
+            return;
+        }
+
+        auditLogService.registrar(auditRef, sourceUuid, destinationUuid, sourceDoc, destDoc,
+                "TRANSFER", amount, balanceBeforeSource, balanceAfterSource,
+                balanceBeforeDestination, balanceAfterDestination, status);
+    }
+
     @Transactional
     public Map<String, Object> ejecutarTransferencia(String sourceId, String destinationId, BigDecimal amount,
             String description) {
@@ -86,24 +100,24 @@ public class TransactionService {
 
         if ("BLOCKED".equalsIgnoreCase(cuentaOrigen.getStatus())
                 || "BLOCKED".equalsIgnoreCase(cuentaOrigen.getStatus())) {
-            auditLogService.registrar(auditRef, sourceUuid, destinationUuid, sourceDoc, destDoc,
-                    "TRANSFER", amount, balanceBeforeSource, balanceBeforeSource,
-                    balanceBeforeDestination, balanceBeforeDestination, "REJECTED");
+            registrarAuditoria(auditRef, sourceUuid, destinationUuid, sourceDoc, destDoc, amount,
+                balanceBeforeSource, balanceBeforeSource,
+                balanceBeforeDestination, balanceBeforeDestination, "REJECTED");
             return crearRespuestaError(response, "Operación rechazada: La cuenta de origen está bloqueada.");
         }
 
         if ("BLOCKED".equalsIgnoreCase(cuentaDestino.getStatus())
                 || "BLOCKED".equalsIgnoreCase(cuentaDestino.getStatus())) {
-            auditLogService.registrar(auditRef, sourceUuid, destinationUuid, sourceDoc, destDoc,
-                    "TRANSFER", amount, balanceBeforeSource, balanceBeforeSource,
-                    balanceBeforeDestination, balanceBeforeDestination, "REJECTED");
+            registrarAuditoria(auditRef, sourceUuid, destinationUuid, sourceDoc, destDoc, amount,
+                balanceBeforeSource, balanceBeforeSource,
+                balanceBeforeDestination, balanceBeforeDestination, "REJECTED");
             return crearRespuestaError(response, "Operación rechazada: La cuenta de destino está bloqueada.");
         }
 
         if (cuentaOrigen.getBalance().compareTo(amount) < 0) {
-            auditLogService.registrar(auditRef, sourceUuid, destinationUuid, sourceDoc, destDoc,
-                    "TRANSFER", amount, balanceBeforeSource, balanceBeforeSource,
-                    balanceBeforeDestination, balanceBeforeDestination, "REJECTED");
+            registrarAuditoria(auditRef, sourceUuid, destinationUuid, sourceDoc, destDoc, amount,
+                balanceBeforeSource, balanceBeforeSource,
+                balanceBeforeDestination, balanceBeforeDestination, "REJECTED");
             return crearRespuestaError(response, "Fondos insuficientes en la cuenta origen");
         }
 
@@ -112,9 +126,9 @@ public class TransactionService {
         BigDecimal gastadoHoy = transactionRepository.sumarTransaccionesDelDia(sourceUuid, inicioDelDia);
 
         if (gastadoHoy.add(amount).compareTo(policy.getDailyLimit()) > 0) {
-            auditLogService.registrar(auditRef, sourceUuid, destinationUuid, sourceDoc, destDoc,
-                    "TRANSFER", amount, balanceBeforeSource, balanceBeforeSource,
-                    balanceBeforeDestination, balanceBeforeDestination, "REJECTED");
+            registrarAuditoria(auditRef, sourceUuid, destinationUuid, sourceDoc, destDoc, amount,
+                balanceBeforeSource, balanceBeforeSource,
+                balanceBeforeDestination, balanceBeforeDestination, "REJECTED");
             return crearRespuestaError(response, "Rechazo: Se ha superado el límite diario de transferencias.");
         }
 
@@ -145,9 +159,9 @@ public class TransactionService {
             transaccion.setStatus("PENDING_VALIDATION");
             transactionRepository.save(transaccion);
 
-            auditLogService.registrar(auditRef, sourceUuid, destinationUuid, sourceDoc, destDoc,
-                    "TRANSFER", amount, balanceBeforeSource, balanceBeforeSource,
-                    balanceBeforeDestination, balanceBeforeDestination, "PENDING_VALIDATION");
+            registrarAuditoria(auditRef, sourceUuid, destinationUuid, sourceDoc, destDoc, amount,
+                balanceBeforeSource, balanceBeforeSource,
+                balanceBeforeDestination, balanceBeforeDestination, "PENDING_VALIDATION");
 
             response.put("success", true);
             response.put("message", "La transacción requiere validación extra (" + policy.getValidationType() + ").");
@@ -187,9 +201,9 @@ public class TransactionService {
         transaccion.setStatus("COMPLETED");
         transactionRepository.save(transaccion);
 
-        auditLogService.registrar(auditRef, sourceUuid, destinationUuid, sourceDoc, destDoc,
-                "TRANSFER", amount, balanceBeforeSource, cuentaOrigen.getBalance(),
-                balanceBeforeDestination, cuentaDestino.getBalance(), "COMPLETED");
+        registrarAuditoria(auditRef, sourceUuid, destinationUuid, sourceDoc, destDoc, amount,
+            balanceBeforeSource, cuentaOrigen.getBalance(),
+            balanceBeforeDestination, cuentaDestino.getBalance(), "COMPLETED");
 
         response.put("success", true);
         response.put("message", "Transferencia Exitosa");
