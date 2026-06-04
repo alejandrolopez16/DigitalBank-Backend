@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 5s # Cada cuánto tiempo chupa los datos
+
+scrape_configs:
+  - job_name: 'digitalbank-backend'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      # host.docker.internal le dice a Docker que busque en tu computadora (localhost)
+      - targets: ['host.docker.internal:8081'] 
+      # NOTA: Cambia el 8080 por 8081 si tu app principal corre en el 8081
